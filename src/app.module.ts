@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { GatewayModules } from './gatewaies/gateway.modules';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ServerListModule } from './server_list/server_list.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     UsersModule,
     AuthModule,
     GatewayModules,
+    ServerListModule,
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 10,

@@ -10,18 +10,22 @@ import { JsonWebTokenStrategy } from './strategies/jwt-strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { EXPIRES_TIME, JWT_SECRET_KEY } from '../config/constants';
+import { ServerListService } from 'src/server_list/server_list.service';
+import { serverListProvider } from 'src/server_list/server_list.provider';
+import { DatabaseModule } from 'src/databases/database.module';
 
 @Module({
   imports: [
     UsersModule,
     TypeOrmModule.forFeature([UsersRepository]),
     PassportModule,
+    DatabaseModule,
     JwtModule.register({
       secret: JWT_SECRET_KEY,
       signOptions: { expiresIn: EXPIRES_TIME },
     }),
   ],
-  providers: [AuthService, UsersService, LocalStrategy, JsonWebTokenStrategy],
+  providers: [...serverListProvider,AuthService, UsersService, ServerListService, LocalStrategy, JsonWebTokenStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}
