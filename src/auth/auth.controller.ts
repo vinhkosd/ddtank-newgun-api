@@ -391,4 +391,33 @@ export class AuthController {
       return false;
     }
   }
+
+  @Get('/launcher/version.xml')
+  async launcherVersion(@Request() request) : Promise<any> {
+    return `<?xml version="1.0" encoding="utf-8"?>
+    <item>
+      <version>1.0.0.70</version>
+      <url>http://newgun.net/Launcher V2.5.zip</url>
+      <urlfast>http://newgun.net/Launcher V2.5.zip</urlfast>  
+      <changelog>http://newgun.net:3005/api/launcher/infoupdate2.html</changelog>
+      <mandatory>true</mandatory>
+    </item>`;
+  }
+
+  @Get('/launcher/infoupdate2.html')
+  async launcherInfo(@Request() request) : Promise<any> {
+    return `
+
+    <style>
+    body
+    {
+    background-color: orange;
+    }
+    </style>
+    <body><font color=black>
+    - Nhẹ hơn, fix 1 số lỗi <br>
+    
+    
+    </body>`;
+  }
 }

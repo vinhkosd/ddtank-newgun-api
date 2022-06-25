@@ -16,7 +16,9 @@ async function bootstrap() {
   );
   app.use(passport.initialize());
   app.use(passport.session());
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['launcher/version.xml'],
+  });
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
