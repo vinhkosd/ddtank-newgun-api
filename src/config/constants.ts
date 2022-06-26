@@ -7,3 +7,4 @@ export const REQUEST_URL = process.env.REQUEST_URL;
 export const KEY_REQUEST = process.env.KEY_REQUEST;
 export const LINK_FLASH = process.env.LINK_FLASH;
 export const LINK_CONFIG = process.env.LINK_CONFIG;
+export const LAUNCHER_VERSION = process.env.LAUNCHER_VERSION;
