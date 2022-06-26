@@ -127,13 +127,13 @@ export class AuthController {
 
       var timeNow = (+ new Date() / 1000).toFixed(0).toString();
 
-      var url = `${REQUEST_URL}CreateLogin.aspx?content=${request.user.name}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name + keyrand + timeNow + KEY_REQUEST)}`;
+      var url = `${REQUEST_URL}CreateLogin.aspx?content=${request.user.name.toLowerCase()}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name.toLowerCase() + keyrand + timeNow + KEY_REQUEST)}`;
 
       const response = await axios.get(url);
 
       var status = response.data;
       if (status = "0") {
-        return `${LINK_FLASH}Loading.swf?user=${request.user.name}&key=${keyrand}&v=104&rand=92386938&config=${LINK_CONFIG}`;
+        return `${LINK_FLASH}Loading.swf?user=${request.user.name.toLowerCase()}&key=${keyrand}&v=104&rand=92386938&config=${LINK_CONFIG}`;
       }
 
       return status;
@@ -158,13 +158,13 @@ export class AuthController {
 
         var timeNow = (+ new Date() / 1000).toFixed(0).toString();
 
-        var url = `${server.RequestUrl}CreateLogin.aspx?content=${request.user.name}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name + keyrand + timeNow + server.KeyRequest)}`;
+        var url = `${server.RequestUrl}CreateLogin.aspx?content=${request.user.name.toLowerCase()}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name.toLowerCase() + keyrand + timeNow + server.KeyRequest)}`;
 
         const response = await axios.get(url);
 
         var status = response.data;
         if (status = "0") {
-          return `${server.FlashUrl}Loading.swf?user=${request.user.name}&key=${keyrand}&v=104&rand=92386938&config=${server.ConfigUrl}`;
+          return `${server.FlashUrl}Loading.swf?user=${request.user.name.toLowerCase()}&key=${keyrand}&v=104&rand=92386938&config=${server.ConfigUrl}`;
         }
 
         return status;
@@ -185,13 +185,13 @@ export class AuthController {
 
     var timeNow = (+ new Date() / 1000).toFixed(0).toString();
 
-    var url = `${REQUEST_URL}CreateLogin.aspx?content=${request.user.name}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name + keyrand + timeNow + KEY_REQUEST)}`;
+    var url = `${REQUEST_URL}CreateLogin.aspx?content=${request.user.name.toLowerCase()}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name.toLowerCase() + keyrand + timeNow + KEY_REQUEST)}`;
 
     const response = await axios.get(url);
 
     var status = response.data;
     if (status = "0") {
-      return `${LINK_FLASH}Loading.swf|user=${request.user.name}&key=${keyrand}&v=104&rand=92386938&config=${LINK_CONFIG}`;
+      return `${LINK_FLASH}Loading.swf|user=${request.user.name.toLowerCase()}&key=${keyrand}&v=104&rand=92386938&config=${LINK_CONFIG}`;
     }
 
     return status;
@@ -209,13 +209,13 @@ export class AuthController {
 
       var timeNow = (+ new Date() / 1000).toFixed(0).toString();
 
-      var url = `${server.RequestUrl}CreateLogin.aspx?content=${request.user.name}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name + keyrand + timeNow + server.KeyRequest)}`;
+      var url = `${server.RequestUrl}CreateLogin.aspx?content=${request.user.name.toLowerCase()}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name.toLowerCase() + keyrand + timeNow + server.KeyRequest)}`;
 
       const response = await axios.get(url);
 
       var status = response.data;
       if (status = "0") {
-        return `${server.FlashUrl}Loading.swf|user=${request.user.name}&key=${keyrand}&v=104&rand=92386938&config=${server.ConfigUrl}`;
+        return `${server.FlashUrl}Loading.swf|user=${request.user.name.toLowerCase()}&key=${keyrand}&v=104&rand=92386938&config=${server.ConfigUrl}`;
       }
 
       return status;
