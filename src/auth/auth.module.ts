@@ -12,6 +12,8 @@ import { PassportModule } from '@nestjs/passport';
 import { EXPIRES_TIME, JWT_SECRET_KEY } from '../config/constants';
 import { ServerListService } from 'src/server_list/server_list.service';
 import { serverListProvider } from 'src/server_list/server_list.provider';
+import { LogCardService } from 'src/log_card/log_card.service';
+import { logCardProvider } from 'src/log_card/log_card.provider';
 import { DatabaseModule } from 'src/databases/database.module';
 
 @Module({
@@ -25,7 +27,7 @@ import { DatabaseModule } from 'src/databases/database.module';
       signOptions: { expiresIn: EXPIRES_TIME },
     }),
   ],
-  providers: [...serverListProvider,AuthService, UsersService, ServerListService, LocalStrategy, JsonWebTokenStrategy],
+  providers: [...serverListProvider, ...logCardProvider,AuthService, UsersService, ServerListService, LogCardService, LocalStrategy, JsonWebTokenStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

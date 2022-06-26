@@ -24,8 +24,10 @@ import { REQUEST_URL, KEY_REQUEST, LINK_FLASH, LINK_CONFIG } from '../config/con
 import { v4 as uuid } from 'uuid';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ServerListService } from '../server_list/server_list.service';
+import { LogCardService } from '../log_card/log_card.service';
 import { createConnection } from 'typeorm';
 import { connect } from 'http2';
+import { LogCardEntity } from 'src/log_card/log_card.entity';
 var _ = require('lodash');
 const axios = require('axios').default;
 var soap = require('soap');
@@ -34,6 +36,23 @@ const SERVER_CLOSED = 0;
 const SERVER_OPEN = 2;
 const SERVER_MAINTAIN = 1;
 const SERVER_HOT = 3;
+
+const VIETTEL = 2;
+const MOBIFONE = 3;
+const VINAPHONE = 6;
+const GARENA = 4;
+const ZING = 5;
+const GATE = 7;
+const VCOIN = 8;
+
+var cardTitle = {};
+cardTitle[VIETTEL] = "Viettel";
+cardTitle[MOBIFONE] = "Mobifone";
+cardTitle[VINAPHONE] = "Vinaphone";
+cardTitle[GARENA] = "Garena";
+cardTitle[ZING] = "Zing";
+cardTitle[GATE] = "Gate";
+cardTitle[VCOIN] = "VCoin";
 
 const SERVER_STATUS_CODE = {
   0: 'Đóng',
@@ -48,7 +67,8 @@ export class AuthController {
     private userService: UsersService,
     private authService: AuthService,
     private serverListService: ServerListService,
-  ) {}
+    private logCardService: LogCardService,
+  ) { }
 
   @Post('/register')
   async registerUser(@Body() input: CreateUserDto) {
@@ -75,7 +95,7 @@ export class AuthController {
   @Post('/login')
   async login(@Request() request): Promise<any> {
     // if(request.body.captcha == request.session.captcha) {
-      return this.authService.login(request.user);
+    return this.authService.login(request.user);
     // } else {
     //   console.log(session);
     //   throw new HttpException(request.body.captcha + 'Captcha không chính xác' + session.captcha, HttpStatus.FORBIDDEN);
@@ -102,53 +122,53 @@ export class AuthController {
   @SkipThrottle()
   @Get('create-login')
   async createLogin(@Request() request): Promise<string> {
-    try{
+    try {
       var keyrand = uuid().toLowerCase();
 
       var timeNow = (+ new Date() / 1000).toFixed(0).toString();
 
       var url = `${REQUEST_URL}CreateLogin.aspx?content=${request.user.name}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name + keyrand + timeNow + KEY_REQUEST)}`;
-      
+
       const response = await axios.get(url);
 
       var status = response.data;
-      if(status = "0") {
+      if (status = "0") {
         return `${LINK_FLASH}Loading.swf?user=${request.user.name}&key=${keyrand}&v=104&rand=92386938&config=${LINK_CONFIG}`;
       }
-      
+
       return status;
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       return null;
     }
-    
+
   }
 
   @UseGuards(AuthenticationGuard)
   @SkipThrottle()
   @Get('create-login/:id')
   async createLoginServerId(@Param('id') id: number, @Request() request): Promise<string> {
-    
+
     var server = await this.serverListService.getServerDetail(id);
-    
+
     var userDetail = await this.userService.findById(request.user.id);
-    if(SERVER_OPEN == server.Status || SERVER_HOT == server.Status || userDetail.vip_level >= 12){
-      try{
+    if (SERVER_OPEN == server.Status || SERVER_HOT == server.Status || userDetail.vip_level >= 12) {
+      try {
         var keyrand = uuid().toLowerCase();
-  
+
         var timeNow = (+ new Date() / 1000).toFixed(0).toString();
-  
+
         var url = `${server.RequestUrl}CreateLogin.aspx?content=${request.user.name}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name + keyrand + timeNow + server.KeyRequest)}`;
-        
+
         const response = await axios.get(url);
-  
+
         var status = response.data;
-        if(status = "0") {
+        if (status = "0") {
           return `${server.FlashUrl}Loading.swf?user=${request.user.name}&key=${keyrand}&v=104&rand=92386938&config=${server.ConfigUrl}`;
         }
-        
+
         return status;
-      } catch(e) {
+      } catch (e) {
         console.log(e);
         console.log(request.user);
         return null;
@@ -166,14 +186,14 @@ export class AuthController {
     var timeNow = (+ new Date() / 1000).toFixed(0).toString();
 
     var url = `${REQUEST_URL}CreateLogin.aspx?content=${request.user.name}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name + keyrand + timeNow + KEY_REQUEST)}`;
-    
+
     const response = await axios.get(url);
 
     var status = response.data;
-    if(status = "0") {
+    if (status = "0") {
       return `${LINK_FLASH}Loading.swf|user=${request.user.name}&key=${keyrand}&v=104&rand=92386938&config=${LINK_CONFIG}`;
     }
-    
+
     return status;
   }
 
@@ -182,22 +202,22 @@ export class AuthController {
   @Get('create-flash-link/:id')
   async createFlashLinkWithSv(@Param('id') id: number, @Request() request): Promise<string> {
     var server = await this.serverListService.getServerDetail(id);
-    
+
     var userDetail = await this.userService.findById(request.user.id);
-    if(SERVER_OPEN == server.Status || SERVER_HOT == server.Status || userDetail.vip_level >= 12){
+    if (SERVER_OPEN == server.Status || SERVER_HOT == server.Status || userDetail.vip_level >= 12) {
       var keyrand = uuid().toLowerCase();
 
       var timeNow = (+ new Date() / 1000).toFixed(0).toString();
 
       var url = `${server.RequestUrl}CreateLogin.aspx?content=${request.user.name}|${keyrand}|${timeNow}|${await this.authService.hashPassword(request.user.name + keyrand + timeNow + server.KeyRequest)}`;
-      
+
       const response = await axios.get(url);
 
       var status = response.data;
-      if(status = "0") {
+      if (status = "0") {
         return `${server.FlashUrl}Loading.swf|user=${request.user.name}&key=${keyrand}&v=104&rand=92386938&config=${server.ConfigUrl}`;
       }
-      
+
       return status;
     }
 
@@ -217,8 +237,8 @@ export class AuthController {
       x += 208;
     });
     // while($svInfo = sqlsrv_fetch_array($loadserver, SQLSRV_FETCH_ASSOC)) {
-      //echo '<option value="'.$svInfo['ServerID'].'">'.$svInfo['ServerName'].'</option>';
-      
+    //echo '<option value="'.$svInfo['ServerID'].'">'.$svInfo['ServerName'].'</option>';
+
     // }
     return KQ;
   }
@@ -237,14 +257,14 @@ export class AuthController {
       throw new HttpException("User don't exists", HttpStatus.NOT_FOUND);
     }
     var oldPassMd5 = await this.authService.hashPassword(request.body.oldpassword);
-    
-    if(user.password == oldPassMd5){
-      var update = _.pick( request.body, 'password');
+
+    if (user.password == oldPassMd5) {
+      var update = _.pick(request.body, 'password');
       update.password = await this.authService.hashPassword(update.password);
       await this.userService.update(user, update);
       return 'Đổi thông tin thành công';
     }
-    
+
     return 'Dữ liệu không hợp lệ';
   }
 
@@ -252,8 +272,8 @@ export class AuthController {
   async forgotPassword(@Body() input) {
     const user = await this.userService.getUserByUserName(input.username);
     if (user) {
-      if(input.email && input.email == user.email) {
-        var update = _.pick( input, 'password');
+      if (input.email && input.email == user.email) {
+        var update = _.pick(input, 'password');
         update.password = await this.authService.hashPassword(update.password);
         await this.userService.update(user, update);
         return 'Quên mật khẩu thành công!';
@@ -263,10 +283,10 @@ export class AuthController {
       return "Tài khoản không tồn tại";
     }
   }
-  
+
   @Get('/captcha')
   @Header('content-type', 'image/svg+xml')
-  async captcha(@Request() request, @Session() session: Record<string, any>) : Promise<any> {
+  async captcha(@Request() request, @Session() session: Record<string, any>): Promise<any> {
     var svgCaptcha = require('svg-captcha');
 
     var captcha = svgCaptcha.create({
@@ -279,7 +299,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Get('/valid-captcha')
-  async validCaptcha(@Request() request) : Promise<any> {
+  async validCaptcha(@Request() request): Promise<any> {
     return request.session.captcha
   }
 
@@ -294,11 +314,11 @@ export class AuthController {
     console.log(request.body);
     var server = await this.serverListService.getServerDetail(svId);
     var portOptions = {};
-    if(server.Port && server.Port > 0) {
-      portOptions = {port: server.Port}
+    if (server.Port && server.Port > 0) {
+      portOptions = { port: server.Port }
     }
     var connection = await createConnection({
-      name:`dbPlayer${svId}${+(new Date())}`,
+      name: `dbPlayer${svId}${+(new Date())}`,
       type: 'mssql',
       host: server.DataSource,
       username: server.UserID,
@@ -328,22 +348,22 @@ export class AuthController {
     var money = parseInt(request.body.money);
     console.log(money);
     console.log(request.body);
-    if(isNaN(money)) {
+    if (isNaN(money)) {
       money = 0;
     }
-    
+
     console.log(chargeID);
     console.log(money);
 
     var resultText = 'ok';
 
-    if(user.money > money) {
-      var update = _.pick( user, 'money');
+    if (user.money > money) {
+      var update = _.pick(user, 'money');
       update.money -= money;
       await this.userService.update(user, update);
-      if(money > 0) {
+      if (money > 0) {
         var result = await queryRunner.manager.query(
-            `INSERT INTO Charge_Money
+          `INSERT INTO Charge_Money
             ([ChargeID]
             ,[UserName]
             ,[Money]
@@ -361,25 +381,25 @@ export class AuthController {
             ,N'${NickName}'
             )`
         );
-  
+
         var url = `${server.RequestUrl}/ChargeToUser.aspx?userID=${playerID}&chargeID=${chargeID}`;
         console.log(url);
-        
+
         const response = await axios.get(url);
-       
-        
+
+
       } else {
-        resultText= 'Dữ liệu không hợp lệ';
+        resultText = 'Dữ liệu không hợp lệ';
       }
     } else {
-      resultText= 'Số dư không đủ';
+      resultText = 'Số dư không đủ';
     }
 
-    
-    
+
+
     connection.close();
 
-    
+
     return resultText;
   }
 
@@ -393,7 +413,7 @@ export class AuthController {
   }
 
   @Get('/launcher/version.xml')
-  async launcherVersion(@Request() request) : Promise<any> {
+  async launcherVersion(@Request() request): Promise<any> {
     return `<?xml version="1.0" encoding="utf-8"?>
     <item>
       <version>1.0.0.70</version>
@@ -405,7 +425,7 @@ export class AuthController {
   }
 
   @Get('/launcher/infoupdate2.html')
-  async launcherInfo(@Request() request) : Promise<any> {
+  async launcherInfo(@Request() request): Promise<any> {
     return `
 
     <style>
@@ -419,5 +439,164 @@ export class AuthController {
     
     
     </body>`;
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Post('/recharge')
+  async recharge(@Body() input, @Request() request) {
+    const user = await this.userService.findById(parseInt(request.user.id, 0));
+    if (!user) {
+      throw new HttpException("User don't exists", HttpStatus.NOT_FOUND);
+    }
+
+    var rate = 1.0;
+    switch (parseInt(input.card_type)) {
+      case VIETTEL:
+        rate = 1.0;
+        break;
+      case MOBIFONE:
+        rate = 1.0;
+        break;
+      case VINAPHONE:
+        rate = 1.0;
+        break;
+      case GARENA:
+        rate = 1.0;
+        break;
+      case ZING:
+        rate = 1.0;
+        break;
+      case GATE:
+        rate = 1.0;
+        break;
+      case VCOIN:
+        rate = 1.0;
+        break;
+      default:
+        rate = 0.0;
+        break;
+    }
+
+    if (rate <= 0) {
+      console.log((input.card_type));
+      return 'Loại thẻ không hợp lệ';
+    }
+
+    var money = 0;
+    money = parseInt(input.money);
+    switch (parseInt(input.money)) {
+      case 10000:
+        break;
+      case 20000:
+        break;
+      case 30000:
+        break;
+      case 40000:
+        break;
+      case 50000:
+        break;
+      case 100000:
+        break;
+      case 200000:
+        break;
+      case 300000:
+        break;
+      case 5000000:
+        break;
+      case 1000000:
+        break;
+      default:
+        money = 0;
+        break;
+    }
+
+    if (money <= 0) {
+      return 'Mệnh giá không hợp lệ';
+    }
+    var whereClause = {
+      card_type: input.card_type,
+      card_code: input.card_code,
+      card_seri: input.card_seri,
+      money: input.money,
+    };
+    
+    var cardInfo = await this.logCardService.getRepository().findOne(whereClause);
+    if(cardInfo) {
+      return 'Thẻ đã được nạp trên hệ thống, vui lòng thử lại sau!';
+    } else {
+      var url = `https://doicard5s.com/api/common`;
+      var postParams = {
+        access_token: "AQrvfPgjqtKoy4puXVI2YwXszWLkAJsn", 
+        code: input.card_code,
+        seri: input.card_seri,
+        money: input.money,
+        typeCard: input.card_type
+      };
+      const response = await axios.post(url, postParams);
+      console.log(response);
+      var resData = response.data;
+      if(resData.status=="success"){
+        
+        var cardInput = new LogCardEntity();
+        cardInput.card_name = cardTitle[input.card_type];
+        cardInput.card_code = input.card_code;
+        cardInput.card_seri = input.card_money;
+        cardInput.card_type = input.card_type;
+        cardInput.money = parseInt(resData.amount);
+        cardInput.note = '';
+        cardInput.status = 1;
+        cardInput.user_id = request.user.id;
+
+        var update = _.pick(user, 'money');
+        update.money += parseInt(resData.amount);
+        await this.userService.update(user, update);
+
+        this.logCardService.getRepository().save(cardInput);
+        
+        return 'Chúc mừng bạn nạp thẻ thành công với mệnh giá '+ resData.amount;
+      } else if(resData.status=="processing"){
+        var cardInput = new LogCardEntity();
+        cardInput.card_name = cardTitle[input.card_type];
+        cardInput.card_code = input.card_code.toString();
+        cardInput.card_seri = input.card_seri.toString();
+        cardInput.card_type = input.card_type.toString();
+        cardInput.money = money;
+        cardInput.create_at = new Date();
+        cardInput.note = '';
+        cardInput.status = 0;
+        cardInput.user_id = request.user.id;
+
+        this.logCardService.getRepository().save(cardInput);
+        return 'Thẻ đang được xử lý vui lòng đợi 1->3s';
+      } else{
+        return resData.message;
+      }
+    }
+  }
+
+  @Post('/callback/:id')
+  async callback(@Param('id') id: number, @Body() input) {
+    if(id == 6969696911212){
+      var card = input.card;
+      var amount = input.amount;
+      var serial = input.serial;
+      var pin = input.pin;
+      var access_token = input.access_token;
+      var status = input.status;
+      var desc = input.desc;
+      var transaction_id = input.transaction_id;
+      console.log(input);
+      console.log({card, amount, serial, pin, access_token, status, desc, transaction_id});
+      // Thẻ đúng 
+      if(status==1) {
+        // select ngược trong database theo serial & pin hoặc transaction_id để lấy thông tin  thẻ đã nạp 
+        // update lại status của thẻ nạp đó
+        
+      } else {
+        // thẻ sai
+
+        
+      }
+    }
   }
 }
